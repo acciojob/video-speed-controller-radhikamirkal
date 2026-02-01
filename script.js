@@ -1,4 +1,4 @@
-// Select elements exactly as Cypress expects
+// Query elements
 const video = document.querySelector('.player__video');
 const toggle = document.querySelector('.toggle');
 const rewind = document.querySelector('.rewind');
@@ -8,63 +8,65 @@ const progressBar = document.querySelector('.progress__filled');
 const volume = document.querySelector('.volume');
 const playbackSpeed = document.querySelector('.playbackSpeed');
 
-// Play / Pause toggle
+// ---- FUNCTIONS ----
+
 function togglePlay() {
-  if (video.paused) {
-    video.play();
-  } else {
-    video.pause();
-  }
+  if (!video) return;
+  video.paused ? video.play() : video.pause();
 }
 
-// Update play/pause icon
 function updateToggle() {
+  if (!toggle || !video) return;
   toggle.textContent = video.paused ? '►' : '❚ ❚';
 }
 
-// Update progress bar
 function handleProgress() {
+  if (!progressBar || !video) return;
   const percent = (video.currentTime / video.duration) * 100;
-  progressBar.style.width = `${percent}%`;
+  progressBar.style.width = percent + '%';
 }
 
-// Scrub video
 function scrub(e) {
+  if (!progress || !video) return;
   const scrubTime = (e.offsetX / progress.offsetWidth) * video.duration;
   video.currentTime = scrubTime;
 }
 
-// Rewind 10s
 function rewindVideo() {
+  if (!video) return;
   video.currentTime -= 10;
 }
 
-// Skip 25s
 function skipVideo() {
+  if (!video) return;
   video.currentTime += 25;
 }
 
-// Volume control
-function handleVolume() {
-  video.volume = this.value;
+// ---- EVENT LISTENERS (GUARDED) ----
+
+if (video) {
+  video.addEventListener('click', togglePlay);
+  video.addEventListener('play', updateToggle);
+  video.addEventListener('pause', updateToggle);
+  video.addEventListener('timeupdate', handleProgress);
 }
 
-// Playback speed control
-function handlePlaybackSpeed() {
-  video.playbackRate = this.value;
+if (toggle) toggle.addEventListener('click', togglePlay);
+if (rewind) rewind.addEventListener('click', rewindVideo);
+if (skip) skip.addEventListener('click', skipVideo);
+
+if (volume) {
+  volume.addEventListener('input', function () {
+    video.volume = this.value;
+  });
 }
 
-// Event listeners
-toggle.addEventListener('click', togglePlay);
-video.addEventListener('click', togglePlay);
-video.addEventListener('play', updateToggle);
-video.addEventListener('pause', updateToggle);
-video.addEventListener('timeupdate', handleProgress);
+if (playbackSpeed) {
+  playbackSpeed.addEventListener('input', function () {
+    video.playbackRate = this.value;
+  });
+}
 
-rewind.addEventListener('click', rewindVideo);
-skip.addEventListener('click', skipVideo);
-
-volume.addEventListener('input', handleVolume);
-playbackSpeed.addEventListener('input', handlePlaybackSpeed);
-
-progress.addEventListener('click', scrub);
+if (progress) {
+  progress.addEventListener('click', scrub);
+}
