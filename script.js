@@ -1,27 +1,31 @@
-// Select elements
-const player = document.querySelector('.player');
-const video = document.querySelector('video');
+// Select elements exactly as Cypress expects
+const video = document.querySelector('.player__video');
+const toggle = document.querySelector('.toggle');
+const rewind = document.querySelector('.rewind');
+const skip = document.querySelector('.skip');
 const progress = document.querySelector('.progress');
 const progressBar = document.querySelector('.progress__filled');
-const toggle = document.querySelector('.player__button');
-const skipButtons = document.querySelectorAll('[data-skip]');
-const ranges = document.querySelectorAll('.player__slider');
+const volume = document.querySelector('.volume');
+const playbackSpeed = document.querySelector('.playbackSpeed');
 
 // Play / Pause toggle
 function togglePlay() {
-  const method = video.paused ? 'play' : 'pause';
-  video[method]();
+  if (video.paused) {
+    video.play();
+  } else {
+    video.pause();
+  }
 }
 
 // Update play/pause icon
-function updateButton() {
+function updateToggle() {
   toggle.textContent = video.paused ? '►' : '❚ ❚';
 }
 
 // Update progress bar
 function handleProgress() {
   const percent = (video.currentTime / video.duration) * 100;
-  progressBar.style.flexBasis = `${percent}%`;
+  progressBar.style.width = `${percent}%`;
 }
 
 // Scrub video
@@ -30,30 +34,37 @@ function scrub(e) {
   video.currentTime = scrubTime;
 }
 
-// Skip forward / backward
-function skip() {
-  video.currentTime += parseFloat(this.dataset.skip);
+// Rewind 10s
+function rewindVideo() {
+  video.currentTime -= 10;
 }
 
-// Handle volume & playback speed
-function handleRangeUpdate() {
-  video[this.name] = this.value;
+// Skip 25s
+function skipVideo() {
+  video.currentTime += 25;
+}
+
+// Volume control
+function handleVolume() {
+  video.volume = this.value;
+}
+
+// Playback speed control
+function handlePlaybackSpeed() {
+  video.playbackRate = this.value;
 }
 
 // Event listeners
+toggle.addEventListener('click', togglePlay);
 video.addEventListener('click', togglePlay);
-video.addEventListener('play', updateButton);
-video.addEventListener('pause', updateButton);
+video.addEventListener('play', updateToggle);
+video.addEventListener('pause', updateToggle);
 video.addEventListener('timeupdate', handleProgress);
 
-toggle.addEventListener('click', togglePlay);
+rewind.addEventListener('click', rewindVideo);
+skip.addEventListener('click', skipVideo);
 
-skipButtons.forEach(button => button.addEventListener('click', skip));
-ranges.forEach(range => range.addEventListener('change', handleRangeUpdate));
-ranges.forEach(range => range.addEventListener('mousemove', handleRangeUpdate));
+volume.addEventListener('input', handleVolume);
+playbackSpeed.addEventListener('input', handlePlaybackSpeed);
 
-let mousedown = false;
 progress.addEventListener('click', scrub);
-progress.addEventListener('mousemove', (e) => mousedown && scrub(e));
-progress.addEventListener('mousedown', () => mousedown = true);
-progress.addEventListener('mouseup', () => mousedown = false);
