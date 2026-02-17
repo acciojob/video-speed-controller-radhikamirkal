@@ -1,72 +1,58 @@
-// Query elements
-const video = document.querySelector('.player__video');
-const toggle = document.querySelector('.toggle');
-const rewind = document.querySelector('.rewind');
-const skip = document.querySelector('.skip');
-const progress = document.querySelector('.progress');
-const progressBar = document.querySelector('.progress__filled');
-const volume = document.querySelector('.volume');
-const playbackSpeed = document.querySelector('.playbackSpeed');
+const player = document.querySelector('.player');
+const video = player.querySelector('.viewer');
+const toggle = player.querySelector('.toggle');
+const progress = player.querySelector('.progress');
+const progressBar = player.querySelector('.progress__filled');
+const skipButtons = player.querySelectorAll('[data-skip]');
+const ranges = player.querySelectorAll('.player__slider');
 
-// ---- FUNCTIONS ----
-
+// Toggle Play / Pause
 function togglePlay() {
-  if (!video) return;
-  video.paused ? video.play() : video.pause();
+  if (video.paused) {
+    video.play();
+  } else {
+    video.pause();
+  }
 }
 
-function updateToggle() {
-  if (!toggle || !video) return;
+// Update button icon
+function updateButton() {
   toggle.textContent = video.paused ? '►' : '❚ ❚';
 }
 
-function handleProgress() {
-  if (!progressBar || !video) return;
-  const percent = (video.currentTime / video.duration) * 100;
-  progressBar.style.width = percent + '%';
+// Skip forward/backward
+function skip() {
+  video.currentTime += parseFloat(this.dataset.skip);
 }
 
+// Handle volume & playback speed
+function handleRangeUpdate() {
+  video[this.name] = this.value;
+}
+
+// Update progress bar
+function handleProgress() {
+  const percent = (video.currentTime / video.duration) * 100;
+  progressBar.style.flexBasis = `${percent}%`;
+}
+
+// Scrub when clicking progress bar
 function scrub(e) {
-  if (!progress || !video) return;
   const scrubTime = (e.offsetX / progress.offsetWidth) * video.duration;
   video.currentTime = scrubTime;
 }
 
-function rewindVideo() {
-  if (!video) return;
-  video.currentTime -= 10;
-}
+// Event Listeners
+video.addEventListener('click', togglePlay);
+video.addEventListener('play', updateButton);
+video.addEventListener('pause', updateButton);
+video.addEventListener('timeupdate', handleProgress);
 
-function skipVideo() {
-  if (!video) return;
-  video.currentTime += 25;
-}
+toggle.addEventListener('click', togglePlay);
 
-// ---- EVENT LISTENERS (GUARDED) ----
+skipButtons.forEach(button => button.addEventListener('click', skip));
 
-if (video) {
-  video.addEventListener('click', togglePlay);
-  video.addEventListener('play', updateToggle);
-  video.addEventListener('pause', updateToggle);
-  video.addEventListener('timeupdate', handleProgress);
-}
+ranges.forEach(range => range.addEventListener('change', handleRangeUpdate));
+ranges.forEach(range => range.addEventListener('mousemove', handleRangeUpdate));
 
-if (toggle) toggle.addEventListener('click', togglePlay);
-if (rewind) rewind.addEventListener('click', rewindVideo);
-if (skip) skip.addEventListener('click', skipVideo);
-
-if (volume) {
-  volume.addEventListener('input', function () {
-    video.volume = this.value;
-  });
-}
-
-if (playbackSpeed) {
-  playbackSpeed.addEventListener('input', function () {
-    video.playbackRate = this.value;
-  });
-}
-
-if (progress) {
-  progress.addEventListener('click', scrub);
-}
+progress.addEventListener('click', scrub);
